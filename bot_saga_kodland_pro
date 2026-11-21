@@ -1,0 +1,139 @@
+import discord
+import random
+import asyncio
+
+from discord.ext import commands
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix='&', intents=intents)
+
+@bot.event
+async def on_ready():
+    print(f'Estamos logados como {bot.user}')
+
+# Quiz sobre poluição: 
+@bot.command()
+async def quiz(ctx):
+    questions = [
+        {
+            "question": "Qual é a principal causa da poluição do ar?",
+            "options": ["Queima de combustíveis fósseis", "Desmatamento", "Uso de pesticidas", "Reciclagem"],
+            "answer": 0
+        },
+        {
+            "question": "Qual é o efeito da poluição da água nos ecossistemas aquáticos?",
+            "options": ["Aumento da biodiversidade", "Diminuição da qualidade da água", "Melhoria na saúde dos peixes", "Aumento da oxigenação"],
+            "answer": 1
+        },
+        {
+            "question": "Qual é a principal fonte de poluição sonora nas cidades?",
+            "options": ["Tráfego de veículos", "Indústrias", "Construção civil", "Eventos culturais"],
+            "answer": 0
+        }
+    ]
+
+    score = 0
+    for q in questions:
+        options_text = "\n".join([f"{i+1}. {option}" for i, option in enumerate(q["options"])])
+        await ctx.send(f"{q['question']}\n{options_text}")
+
+        def check(m):
+            return m.author == ctx.author and m.content.isdigit() and 1 <= int(m.content) <= len(q["options"])
+
+        try:
+            msg = await bot.wait_for('message', check=check, timeout=30.0)
+            if int(msg.content) - 1 == q["answer"]:
+                score += 1
+                await ctx.send("Resposta correta!")
+            else:
+                await ctx.send(f"Resposta incorreta! A resposta correta era: {q['options'][q['answer']]}")
+        except asyncio.TimeoutError:
+            await ctx.send("Tempo esgotado! Próxima pergunta.")
+
+    await ctx.send(f"Quiz finalizado! Sua pontuação: {score}/{len(questions)}")
+
+#separndo o Lixo
+@bot.command()
+async def separar(ctx, material):
+    material = material.lower()
+
+    if material == "Plastico":
+        await ctx.send("Plástico: lixeira vermelha! ♻️")
+    elif material == "Vidro":
+        await ctx.send("Vidro: lixeira verde! ♻️")
+    elif material == "Papel":
+        await ctx.send("Papel: lixeira azul! ♻️")
+    elif material == "Metal":
+        await ctx.send("Metal: lixeira amarela! ♻️")
+    else:
+        await ctx.send("Material não reconhecido. Por favor, tente novamente.")
+
+# Reutilizando Produtos
+@bot.command()
+async def reutilizar(ctx, material):
+    material = material.lower()
+
+    if material == "garrafa":
+        await ctx.send("♻️ Você pode transformar uma garrafa em um vaso de plantas!")
+
+    elif material == "lata":
+        await ctx.send("♻️ Você pode transformar uma lata em um porta-lápis!")
+
+    elif material == "pote":
+        await ctx.send("♻️ Você pode reutilizar um pote como recipiente organizador!")
+
+    elif material == "papel":
+        await ctx.send("♻️ Você pode usar o verso das folhas para fazer rascunhos!")
+
+    else:
+        await ctx.send("Não tenho uma ideia para esse material ainda. Tente garrafa, lata, pote ou papel!")
+
+# Impacto
+@bot.command()
+async def impacto(ctx, material=None):
+
+    await ctx.send(
+        "🌍 **O descarte incorreto do lixo é um problema ambiental muito sério!**\n\n"
+        "Quando jogamos resíduos em locais inadequados, podemos contaminar "
+        "o solo, poluir rios e oceanos e prejudicar os animais. Além disso, "
+        "muitos materiais que poderiam ser reciclados acabam desperdiçados. "
+        "Pequenas atitudes, como separar o lixo e reutilizar materiais, "
+        "ajudam a proteger o meio ambiente. Faça sua parte! ♻️"
+    )
+
+    if material is None:
+        return
+
+    material = material.lower()
+
+    if material == "plastico":
+        await ctx.send("🌊 O descarte incorreto de plástico pode poluir rios e oceanos, prejudicando os animais.")
+
+    elif material == "papel":
+        await ctx.send("🌳 O desperdício de papel aumenta a demanda por matéria-prima e pode contribuir para o desmatamento.")
+
+    elif material == "vidro":
+        await ctx.send("⚠️ O vidro descartado incorretamente pode causar acidentes e permanecer no ambiente por muito tempo.")
+
+    elif material == "metal":
+        await ctx.send("🏭 O descarte incorreto de metais desperdiça materiais recicláveis e pode contaminar o ambiente.")
+
+    else:
+        await ctx.send("Não tenho informações sobre esse material ainda. Tente plastico, papel, vidro ou metal!")
+
+# Ajuda
+@bot.command()
+async def ajuda(ctx):
+    await ctx.send(
+        "**🌱 BOT AMBIENTAL — COMANDOS**\n\n"
+        "♻️ `&quiz` - Responde a um quiz sobre poluição.\n"
+        "🗑️ `&separar plastico` - Descobre onde descartar um material.\n"
+        "🌿 `&reutilizar garrafa` - Recebe ideias de reutilização.\n"
+        "🌍 `&impacto` - Recebe uma mensagem de conscientização.\n"
+        "🏭 `&impacto plastico` - Descobre os impactos de um material.\n\n"
+        "Use os comandos para aprender a cuidar melhor do meio ambiente!"
+    )
+
+bot.run("Coloque seu Token Aqui")
